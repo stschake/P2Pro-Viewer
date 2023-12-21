@@ -43,6 +43,35 @@ class PropTpdParams(enum.IntEnum):
     TPD_PROP_GAIN_SEL = 5   # binary, 0-1, Gain select (0=low, 1=high)
 
 
+class AutoShutterParams(enum.IntEnum):
+    # Auto shutter update switch. 0:OFF, 1:ON
+    AS_SWITCH = 0
+    # Auto shutter minimun interval,to prevent updates too frequently.
+    # unit: 1s, range: 5-655
+    AS_MIN_INTERVAL = 1
+    # Auto shutter maximun interval,shutter updates automatically at this time.
+    # unit: 1s, range: 5-655
+    AS_MAX_INTERVAL = 2
+    # Vtemp's threshold to trigger OOC update in auto shutter.Do OOC update according to
+    # the temperature difference between latest update.
+    # unit: cnt(36cnt~=1c), range: 0-65535
+    AS_TEMP_THRESHOLD_OOC = 3
+    # Vtemp's threshold to trigger B update in auto shutter.Do B update according to
+    # the temperature difference between latest update.
+    # unit: cnt(36cnt~=1c), range: 0-65535
+    AS_TEMP_THRESHOLD_B = 4
+    # Shutter anti-fall protection switch. 0:OFF, 1:ON
+    AS_PROTECT_SWITCH = 5
+    # Manual shutter to auto shutter(or manual shutter)'s minimun interval,
+    # to prevent updates too frequently.
+    # unit: 1s, range: 0-655
+    AS_ANY_INTERVAL = 6
+    # Shutter anti-fall protection threshold in high gain mode.Range:0-65535.
+    AS_PROTECT_THR_HIGH_GAIN = 7
+    # Shutter anti-fall protection threshold in low gain mode.Range:0-65535.
+    AS_PROTECT_THR_LOW_GAIN = 8
+
+
 class DeviceInfoType(enum.IntEnum):
     DEV_INFO_CHIP_ID = 0
     DEV_INFO_FW_COMPILE_DATE = 1
@@ -66,7 +95,11 @@ class CmdCode(enum.IntEnum):
     spi_transfer = 0x8201
     get_device_info = 0x8405
     pseudo_color = 0x8409
+    shutter_status = 0x830c
+    shutter_ctl = 0x010c
+    shutter_manual = 0x020c
     shutter_vtemp = 0x840c
+    auto_shutter_params = 0x8214
     prop_tpd_params = 0x8514
     cur_vtemp = 0x8b0d
     preview_start = 0xc10f
@@ -249,6 +282,21 @@ class P2Pro:
         res = self._long_cmd_read(CmdCode.prop_tpd_params, tpd_param)
         return struct.unpack(">H", res)[0]
 
+    def get_auto_shutter_params(self, auto_shutter_param: AutoShutterParams) -> int:
+        res = self._long_cmd_read(CmdCode.auto_shutter_params, auto_shutter_param)
+        return struct.unpack(">H", res)[0]
+
     def get_device_info(self, dev_info: DeviceInfoType):
         res = self._standard_cmd_read(CmdCode.get_device_info, dev_info, DeviceInfoType_len[dev_info])
         return res
+
+    def get_shutter_status(self):
+        res = self._standard_cmd_read(CmdCode.shutter_status, 0, 2)
+        print(f"shutter control {'on' if res[0] else 'off'} status {'open' if res[1] else 'closed'}")
+        return res
+
+    def set_shutter_control(self, enable):
+        self._standard_cmd_write((CmdCode.shutter_ctl | CmdDir.SET), enable)
+
+    def set_shutter(self, close):
+        self._standard_cmd_write((CmdCode.shutter_manual | CmdDir.SET), close)
