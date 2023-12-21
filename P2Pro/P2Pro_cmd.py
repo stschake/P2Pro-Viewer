@@ -34,6 +34,30 @@ class PseudoColorTypes(enum.IntEnum):
     # RED_HOT_MODE = 26
 
 
+class ImageParams(enum.IntEnum):
+    # TNR(Temporal Noise Reduction) level.Range:0-3.
+    IP_LEVEL_TNR = 0
+    # SNR(Spatial Noise Reduction) level.Range:0-3.
+    IP_LEVEL_SNR = 1
+    # DDE(digital detail enhance) level.Range:0-6.
+    IP_LEVEL_DDE = 2
+    # Brightness level. range:0-255
+    IP_LEVEL_BRIGHTNESS = 3
+    # Contrast level. range:0-255
+    IP_LEVEL_CONTRAST = 4
+    # AGC(Auto Gain Control) level.Range:0-5.
+    IP_MODE_AGC = 5
+    # AGC max gain.Range:0-255
+    IP_LEVEL_MAX_GAIN = 6
+    # AGC BOS(Brightness Offset).Range:0-255
+    IP_LEVEL_BOS = 7
+    # AGC switch. 0:OFF, 1:ON
+    IP_ONOFF_AGC = 8
+    # Mirror flip status. 0:no mirror/flip, 1:only mirror the frame,
+    # 2:only flip the frame, 3:mirror and flip the frame
+    IP_SEL_MIRROR_FLIP = 9
+
+
 class PropTpdParams(enum.IntEnum):
     TPD_PROP_DISTANCE = 0   # 1/163.835 m, 0-32767, Distance
     TPD_PROP_TU = 1         # 1 K, 0-1024, Reflection temperature
@@ -100,6 +124,7 @@ class CmdCode(enum.IntEnum):
     shutter_manual = 0x020c
     shutter_vtemp = 0x840c
     auto_shutter_params = 0x8214
+    image_params = 0x8314
     prop_tpd_params = 0x8514
     cur_vtemp = 0x8b0d
     preview_start = 0xc10f
@@ -288,6 +313,13 @@ class P2Pro:
     
     def set_auto_shutter_params(self, auto_shutter_param: AutoShutterParams, value: int):
         self._long_cmd_write(CmdCode.auto_shutter_params | CmdDir.SET, auto_shutter_param, value)
+
+    def get_image_params(self, image_param: AutoShutterParams) -> int:
+        res = self._long_cmd_read(CmdCode.image_params, image_param)
+        return struct.unpack(">H", res)[0]
+    
+    def set_image_params(self, image_param: AutoShutterParams, value: int):
+        self._long_cmd_write(CmdCode.image_params | CmdDir.SET, image_param, value)
 
     def get_device_info(self, dev_info: DeviceInfoType):
         res = self._standard_cmd_read(CmdCode.get_device_info, dev_info, DeviceInfoType_len[dev_info])
