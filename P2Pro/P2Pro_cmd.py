@@ -285,6 +285,9 @@ class P2Pro:
     def get_auto_shutter_params(self, auto_shutter_param: AutoShutterParams) -> int:
         res = self._long_cmd_read(CmdCode.auto_shutter_params, auto_shutter_param)
         return struct.unpack(">H", res)[0]
+    
+    def set_auto_shutter_params(self, auto_shutter_param: AutoShutterParams, value: int):
+        self._long_cmd_write(CmdCode.auto_shutter_params | CmdDir.SET, auto_shutter_param, value)
 
     def get_device_info(self, dev_info: DeviceInfoType):
         res = self._standard_cmd_read(CmdCode.get_device_info, dev_info, DeviceInfoType_len[dev_info])

@@ -32,8 +32,13 @@ try:
     time.sleep(1)
     cam_cmd.pseudo_color_set(0, P2Pro_CMD.PseudoColorTypes.PSEUDO_IRON_RED)
     time.sleep(1)
-    for prop in P2Pro_CMD.AutoShutterParams:
-        print(f"param {prop.name}: {cam_cmd.get_auto_shutter_params(prop)}")
+    
+    #for prop in P2Pro_CMD.AutoShutterParams:
+    #    print(f"param {prop.name}: {cam_cmd.get_auto_shutter_params(prop)}")
+
+    print(f"auto shutter on: {cam_cmd.get_auto_shutter_params(P2Pro_CMD.AutoShutterParams.AS_SWITCH)}")
+    cam_cmd.set_auto_shutter_params(P2Pro_CMD.AutoShutterParams.AS_SWITCH, 0)
+    print(f"auto shutter on: {cam_cmd.get_auto_shutter_params(P2Pro_CMD.AutoShutterParams.AS_SWITCH)}")
 
     #time.sleep(3)
     #print("=== shutter test ===")
