@@ -40,6 +40,7 @@ class ImageParams(enum.IntEnum):
     # SNR(Spatial Noise Reduction) level.Range:0-3.
     IP_LEVEL_SNR = 1
     # DDE(digital detail enhance) level.Range:0-6.
+    # 0, 5 & 6 seem to error when setting them
     IP_LEVEL_DDE = 2
     # Brightness level. range:0-255
     IP_LEVEL_BRIGHTNESS = 3
@@ -123,6 +124,7 @@ class CmdCode(enum.IntEnum):
     shutter_ctl = 0x010c
     shutter_manual = 0x020c
     shutter_vtemp = 0x840c
+    shutter_trigger = 0x810d
     auto_shutter_params = 0x8214
     image_params = 0x8314
     prop_tpd_params = 0x8514
@@ -335,3 +337,6 @@ class P2Pro:
 
     def set_shutter(self, close):
         self._standard_cmd_write((CmdCode.shutter_manual | CmdDir.SET), close)
+
+    def trigger_shutter_calibration(self):
+        self._standard_cmd_write((CmdCode.shutter_trigger | CmdDir.SET))
